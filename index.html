@@ -1,0 +1,50 @@
+<html>
+    <head>
+        <title>Conway's Game of Life</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <canvas id="conway"></canvas>
+        <div id="options">
+            <div class="collapse"></div>
+            <div class="options">
+                <div class="option-part">
+                    <h2>Couleurs</h2>
+                    <select id="color_scheme">
+                        <option value="dark">Sombre</option>
+                        <option value="light">Clair</option>
+                    </select>
+                </div>
+                <div class="option-part">
+                    <h2>Dimensions</h2>
+                    <div class="param">
+                        <label for="block_size">Taille</label>
+                        <input type="number" min="1" max="16" value="3" id="block_size">
+                    </div>
+                    <div class="param">
+                        <label for="block_padding">Padding</label>
+                        <input type="number" min="0" max="14" value="1" id="block_padding">
+                    </div>
+                </div>
+                <div class="option-part">
+                    <h2>Style</h2>
+                    <div class="param">
+                        <label for="show_grid">
+                            <input type="checkbox" id="show_grid">Voir la grille
+                        </label>
+                    </div>
+                    <div class="param">
+                        <label for="show_hover_grid">
+                            <input type="checkbox" id="show_hover_grid">Voir la grille au survol
+                        </label>
+                    </div>
+                    <div class="param">
+                        <label for="motion_blur">Motion Blur</label>
+                        <input type="range" id="motion_blur" min="0" max="9" val="2">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>
