@@ -86,7 +86,7 @@ canvas {
     margin-bottom: 4px;
 }
 
-input, select {
+input, select, button {
     border: solid 1px #1A2A34;
     padding: 4px 6px;
     background-color: #0A1F2A;
@@ -96,7 +96,7 @@ input, select {
     margin: 0;
 }
 
-input:focus {
+input:focus, button:active {
     box-shadow: 0 0 5px rgba(255,255,255,0.1);
     background-color: #1A2A34;
 }

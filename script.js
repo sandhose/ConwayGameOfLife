@@ -28,9 +28,8 @@ Conway.prototype = {
         this.blocks = [];
         this.zoom = 1;
 
-        this.speed = 50;
-
         this.running = true;
+        this.generations = 0;
 
         this.initInterface();
 
@@ -106,6 +105,8 @@ Conway.prototype = {
 
         document.getElementById("random_map").addEventListener("click", this.randomBlocks.bind(this), false);
         document.getElementById("clear").addEventListener("click", this.resetBlocks.bind(this), false);
+
+        this.generationsCount = document.getElementById("gen_count");
     },
     optionsChange: function(option, arg) {
         var val = typeof arg == "object" ? (arg.target.type == "checkbox" ? arg.target.checked : arg.target.value) : arg;
@@ -160,7 +161,6 @@ Conway.prototype = {
             this.ctx.strokeStyle = "rgb(" + this.schemes[this.options.scheme].grid + ")";
             this.ctx.lineWidth = this.options.padding * this.zoom;
             if(this.options.show_grid) this.ctx.stroke();
-                                   (Math.random() < 0.1);
             if(this.options.grid_hover) {
                 var gradient = this.ctx.createRadialGradient(this.mouse.x, this.mouse.y, 0, this.mouse.x, this.mouse.y, 200 * this.zoom);
                 gradient.addColorStop(0, 'rgba(' + this.schemes[this.options.scheme].grid_hover + ', 0.3)');
@@ -180,8 +180,7 @@ Conway.prototype = {
                 if(this.blocks[(x+i+this.blockCount.w)%this.blockCount.w][(y+j+this.blockCount.h)%this.blockCount.h] && !(i==0 && j==0)) c++;
             }
         }
-        if(c == 3 || (c == 2 && this.blocks[x][y])) return true;
-        else return false;
+        return c == 3 || (c == 2 && this.blocks[x][y]);
     },
     randomBlocks: function() {
         for(var i = 0; i < this.blockCount.w; i++) {
@@ -198,6 +197,7 @@ Conway.prototype = {
                 this.blocks[i][j] = false;
             }
         }
+        this.generationsCount.innerHTML = this.generations = 0;
     },
     updateCanvas: function() {
         console.log("update");
@@ -227,6 +227,7 @@ Conway.prototype = {
         clearTimeout(this.liveTimeout);
         this.liveTimeout = setTimeout(this.live.bind(this), 1000/(this.options.speed));
         if(!this.running) return;
+        this.generations++;
         var newMap = [];
         for(var i = 0; i < this.blockCount.w; i++) {
             newMap[i] = [];
@@ -235,6 +236,8 @@ Conway.prototype = {
             }
         }
         this.blocks = newMap;
+
+        this.generationsCount.innerHTML = this.generations;
     },
     mouseMove: function(event) {
         var mv_x = this.mouse.x - event.clientX,
