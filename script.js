@@ -8,6 +8,9 @@ window.requestAnimFrame = (function(){
             };
 })();
 
+// function.prototype.bind shim
+Function.prototype.bind=Function.prototype.bind||function(d){var a=Array.prototype.splice.call(arguments,1),c=this;var b=function(){var e=a.concat(Array.prototype.splice.call(arguments,0));if(!(this instanceof b)){return c.apply(d,e)}c.apply(this,e)};b.prototype=c.prototype;return b};
+
 var Conway = function() {
     if(!(this instanceof Conway)) {
         return new Conway();
@@ -27,6 +30,8 @@ Conway.prototype = {
 
         this.speed = 50;
 
+        this.running = true;
+
         this.initInterface();
 
         this.updateCanvas();
@@ -38,7 +43,8 @@ Conway.prototype = {
         window.addEventListener("mouseup", this.mouseUp.bind(this), false)
         this.canvas.addEventListener("mousedown", this.mouseDown.bind(this), false);
         this.canvas.addEventListener("mouveout", this.mouseOut.bind(this), false);
-        this.canvas.addEventListener("mousewheel", this.mouseWheel.bind(this), false);
+        this.canvas.addEventListener("mousewheel", this.mouseWheel.bind(this), false)
+        this.canvas.addEventListener("contextmenu", function(e) { e.preventDefault(); return false; }, false);
 
         document.querySelector("#options .collapse").addEventListener("click", function(event) {
             event.target.parentNode.classList.toggle("collapsed");
@@ -81,7 +87,8 @@ Conway.prototype = {
             size: document.getElementById("block_size"),
             show_grid: document.getElementById("show_grid"),
             grid_hover: document.getElementById("show_hover_grid"),
-            motion_blur: document.getElementById("motion_blur")
+            motion_blur: document.getElementById("motion_blur"),
+            speed: document.getElementById("speed")
         };
 
         this.options = {};
@@ -91,6 +98,14 @@ Conway.prototype = {
             var val = this.controls[i].type == "checkbox" ? this.controls[i].checked : this.controls[i].value;
             this.optionsChange(i, val);
         }
+
+        document.getElementById("playpause").addEventListener("click", function(e) {
+            this.running = !this.running;
+            e.target.innerHTML = !this.running ? "Play" : "Pause";
+        }.bind(this), false);
+
+        document.getElementById("random_map").addEventListener("click", this.randomBlocks.bind(this), false);
+        document.getElementById("clear").addEventListener("click", this.resetBlocks.bind(this), false);
     },
     optionsChange: function(option, arg) {
         var val = typeof arg == "object" ? (arg.target.type == "checkbox" ? arg.target.checked : arg.target.value) : arg;
@@ -99,8 +114,9 @@ Conway.prototype = {
             document.body.classList.remove(val == "light" ? "scheme-dark" : "scheme-light");
             document.body.classList.add(val == "light" ? "scheme-light" : "scheme-dark");
         }
-        else {
-
+        else if(option == "speed") {
+            clearTimeout(this.liveTimeout);
+            this.liveTimeout = setTimeout(this.live.bind(this), 1000/(this.options.speed));
         }
 
         this.options[option] = val;
@@ -144,7 +160,7 @@ Conway.prototype = {
             this.ctx.strokeStyle = "rgb(" + this.schemes[this.options.scheme].grid + ")";
             this.ctx.lineWidth = this.options.padding * this.zoom;
             if(this.options.show_grid) this.ctx.stroke();
-
+                                   (Math.random() < 0.1);
             if(this.options.grid_hover) {
                 var gradient = this.ctx.createRadialGradient(this.mouse.x, this.mouse.y, 0, this.mouse.x, this.mouse.y, 200 * this.zoom);
                 gradient.addColorStop(0, 'rgba(' + this.schemes[this.options.scheme].grid_hover + ', 0.3)');
@@ -175,6 +191,14 @@ Conway.prototype = {
             }
         }
     },
+    resetBlocks: function() {
+        for(var i = 0; i < this.blockCount.w; i++) {
+            this.blocks[i] = [];
+            for(var j = 0; j < this.blockCount.h; j++) {
+                this.blocks[i][j] = false;
+            }
+        }
+    },
     updateCanvas: function() {
         console.log("update");
         this.canvas.height = window.innerHeight;
@@ -191,9 +215,18 @@ Conway.prototype = {
             if(!this.blocks[i]) this.blocks[i] = [];
         }
     },
+    drawBlock: function(clientX, clientY) {
+        var x = Math.round(((this.zoomOffset.x + clientX) / this.zoom - this.options.padding / 2) / (this.options.size + this.options.padding)),
+            y = Math.round(((this.zoomOffset.y + clientY) / this.zoom - this.options.padding / 2) / (this.options.size + this.options.padding));
+
+        if(this.blocks.length > x && this.blocks[x].length > y) {
+            this.blocks[x][y] = !this.blocks[x][y];
+        }
+    },
     live: function() {
         clearTimeout(this.liveTimeout);
-        this.liveTimeout = setTimeout(this.live.bind(this), 1000/this.speed);
+        this.liveTimeout = setTimeout(this.live.bind(this), 1000/(this.options.speed));
+        if(!this.running) return;
         var newMap = [];
         for(var i = 0; i < this.blockCount.w; i++) {
             newMap[i] = [];
@@ -223,8 +256,17 @@ Conway.prototype = {
         this.mouseDragging = false;
     },
     mouseDown: function(event) {
+        event = event || window.event;
+        if ( !event.which && event.button !== undefined ) {
+            event.which = ( event.button & 1 ? 1 : ( event.button & 2 ? 3 : ( event.button & 4 ? 2 : 0 ) ) );
+        }
+
+        if(event.which == 3) {
+            this.drawBlock(event.clientX, event.clientY);
+        }
+
         this.mouseMove(event);
-        this.mouseDragging = true;
+        this.mouseDragging = event.which == 1;
     },
     mouseUp: function(event) {
         this.mouseMove(event);
