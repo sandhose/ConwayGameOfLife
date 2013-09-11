@@ -111,11 +111,11 @@ input:focus, button:active {
     background-color: #EEE;
 }
 
-.scheme-light input, .scheme-light select {
+.scheme-light input, .scheme-light select, .scheme-light button {
     border-color: #CCC;
     background-color: #fff;
 }
 
-.scheme-light input:focus {
+.scheme-light input:focus, .scheme-light button:active {
     box-shadow: 0 0 8px rgba(80,200,250,0.4);
 }
